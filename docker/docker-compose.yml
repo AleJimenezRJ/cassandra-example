@@ -1,0 +1,52 @@
+
+
+services:
+  cassandra:
+    build:
+      context: ../
+      dockerfile: docker/cassandra/Dockerfile
+    ports:
+     - "9042:9042"
+    container_name: cassandra
+    environment:
+      - CASSANDRA_CLUSTER_NAME=TestCluster
+    healthcheck:
+      test: ["CMD-SHELL", "cqlsh -e 'describe keyspaces' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      
+  cassandra-init:
+    image: cassandra:3.11
+    container_name: cassandra-init
+    depends_on:
+      cassandra:
+        condition: service_healthy
+    volumes:
+      - ../docker/cassandra/initial-seed.cql:/initial-seed.cql
+    command: >
+      bash -c "
+      echo 'Waiting for cassandra to be ready...';
+      sleep 10;
+      cqlsh cassandra -f /initial-seed.cql;
+      echo 'Cassandra initialization complete!';
+      "
+    restart: "no"
+      
+  spring-boot-cassandra:
+    build:
+      context: ../
+      dockerfile: docker/spring-boot-cassandra/Dockerfile
+    ports:
+     - "9003:9003"
+    environment:
+      SPRING_DATA_CASSANDRA_CONTACT_POINTS: cassandra
+    container_name: spring-boot-cassandra
+    entrypoint: /wait-for-it.sh cassandra:9042 -t 60 -- java -Djava.security.egd=file:/dev/./urandom -jar app.jar
+    depends_on:
+      cassandra-init:
+        condition: service_completed_successfully
+
+networks:
+  default:
+    driver: bridge
