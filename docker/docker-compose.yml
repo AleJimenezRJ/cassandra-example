@@ -16,6 +16,8 @@ services:
       - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
       - MAX_HEAP_SIZE=512M
       - HEAP_NEWSIZE=100M
+    volumes:
+      - cassandra_node1_data:/var/lib/cassandra
     healthcheck:
       test: ["CMD-SHELL", "nodetool status | grep UN"]
       interval: 20s
@@ -38,6 +40,8 @@ services:
       - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
       - MAX_HEAP_SIZE=512M
       - HEAP_NEWSIZE=100M
+    volumes:
+      - cassandra_node2_data:/var/lib/cassandra
     depends_on:
       cassandra-node1:
         condition: service_healthy
@@ -63,6 +67,8 @@ services:
       - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
       - MAX_HEAP_SIZE=512M
       - HEAP_NEWSIZE=100M
+    volumes:
+      - cassandra_node3_data:/var/lib/cassandra
     depends_on:
       cassandra-node2:
         condition: service_healthy
@@ -107,6 +113,14 @@ services:
     depends_on:
       cassandra-init:
         condition: service_completed_successfully
+
+volumes:
+  cassandra_node1_data:
+    name: cassandra_cluster_node1_data
+  cassandra_node2_data:
+    name: cassandra_cluster_node2_data
+  cassandra_node3_data:
+    name: cassandra_cluster_node3_data
 
 networks:
   default:
