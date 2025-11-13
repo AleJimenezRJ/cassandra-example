@@ -1,4 +1,4 @@
-package com.reljicd.repository;
+package cassandra.repository;
 
 import org.junit.Ignore;
 import org.junit.runner.RunWith;

@@ -1,7 +1,7 @@
-package com.reljicd.controller;
+package cassandra.controller;
 
-import com.reljicd.dto.ExampleTableDTO;
-import com.reljicd.service.ExampleTableService;
+import cassandra.dto.ExampleTableDTO;
+import cassandra.service.ExampleTableService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;

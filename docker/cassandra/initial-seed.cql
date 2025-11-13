@@ -1,3 +1,5 @@
+-- Create the keyspace, similar to a CREATE DATABASE in SQL
+
 CREATE KEYSPACE IF NOT EXISTS spring_boot_cassandra WITH replication = {'class': 'SimpleStrategy', 'replication_factor': '1'}  AND durable_writes = true;
 
 USE spring_boot_cassandra;

@@ -1,6 +1,6 @@
-package com.reljicd.repository;
+package cassandra.repository;
 
-import com.reljicd.entity.ExampleTable;
+import cassandra.entity.ExampleTable;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;

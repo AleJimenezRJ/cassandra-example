@@ -1,6 +1,6 @@
-package com.reljicd.dto;
+package cassandra.dto;
 
-import com.reljicd.entity.ExampleTable;
+import cassandra.entity.ExampleTable;
 import com.univocity.parsers.annotations.Parsed;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

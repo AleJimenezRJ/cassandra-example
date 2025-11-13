@@ -1,6 +1,6 @@
-package com.reljicd;
+package cassandra;
 
-import com.reljicd.dto.ExampleTableDTO;
+import cassandra.dto.ExampleTableDTO;
 
 public class TestFixtures {
 

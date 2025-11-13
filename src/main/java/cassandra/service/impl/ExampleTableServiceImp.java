@@ -1,8 +1,8 @@
-package com.reljicd.service.impl;
+package cassandra.service.impl;
 
-import com.reljicd.dto.ExampleTableDTO;
-import com.reljicd.repository.ExampleTableRepository;
-import com.reljicd.service.ExampleTableService;
+import cassandra.dto.ExampleTableDTO;
+import cassandra.repository.ExampleTableRepository;
+import cassandra.service.ExampleTableService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

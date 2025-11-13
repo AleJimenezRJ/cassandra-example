@@ -1,6 +1,6 @@
-package com.reljicd.service;
+package cassandra.service;
 
-import com.reljicd.dto.ExampleTableDTO;
+import cassandra.dto.ExampleTableDTO;
 
 import java.util.Collection;
 

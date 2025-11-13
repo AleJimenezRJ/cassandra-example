@@ -1,10 +1,10 @@
-package com.reljicd.controller;
+package cassandra.controller;
 
-import com.reljicd.TestFixtures;
-import com.reljicd.annotation.CassandraEmbeddedConfiguration;
-import com.reljicd.dto.ExampleTableDTO;
-import com.reljicd.entity.ExampleTable;
-import com.reljicd.repository.ExampleTableRepository;
+import cassandra.TestFixtures;
+import cassandra.annotation.CassandraEmbeddedConfiguration;
+import cassandra.dto.ExampleTableDTO;
+import cassandra.entity.ExampleTable;
+import cassandra.repository.ExampleTableRepository;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;

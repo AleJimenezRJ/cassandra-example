@@ -1,7 +1,7 @@
-package com.reljicd.entity;
+package cassandra.entity;
 
 
-import com.reljicd.dto.ExampleTableDTO;
+import cassandra.dto.ExampleTableDTO;
 import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.data.cassandra.mapping.PrimaryKey;
 import org.springframework.data.cassandra.mapping.PrimaryKeyClass;

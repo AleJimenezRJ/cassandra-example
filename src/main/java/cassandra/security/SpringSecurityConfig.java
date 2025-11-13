@@ -1,4 +1,4 @@
-package com.reljicd.security;
+package cassandra.security;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
  * Switches off Spring Boot automatic security configuration
  *
  * @author reljicd
+ * @author alejandro (Refactored)
  */
 @EnableWebSecurity
 @Configuration

@@ -1,4 +1,4 @@
-package com.reljicd;
+package cassandra;
 
 import org.cassandraunit.spring.CassandraUnit;
 import org.cassandraunit.spring.CassandraUnitDependencyInjectionTestExecutionListener;

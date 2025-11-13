@@ -1,4 +1,4 @@
-package com.reljicd.annotation;
+package cassandra.annotation;
 
 import org.cassandraunit.spring.CassandraDataSet;
 import org.cassandraunit.spring.CassandraUnitDependencyInjectionTestExecutionListener;

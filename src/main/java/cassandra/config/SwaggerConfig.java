@@ -1,4 +1,4 @@
-package com.reljicd.config;
+package cassandra.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,7 +19,7 @@ public class SwaggerConfig {
     public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2)
                 .select()
-                .apis(RequestHandlerSelectors.basePackage("com.reljicd.controller"))
+                .apis(RequestHandlerSelectors.basePackage("cassandra.controller"))
                 .paths(PathSelectors.any())
                 .build()
                 .apiInfo(apiInfo());

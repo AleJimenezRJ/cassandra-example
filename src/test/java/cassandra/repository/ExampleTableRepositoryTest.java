@@ -1,6 +1,6 @@
-package com.reljicd.repository;
+package cassandra.repository;
 
-import com.reljicd.annotation.CassandraEmbeddedConfiguration;
+import cassandra.annotation.CassandraEmbeddedConfiguration;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
