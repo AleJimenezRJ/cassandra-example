@@ -4,7 +4,7 @@
 
 The original [base code](https://github.com/reljicd/spring-boot-cassandra) belongs to user [reljicd](https://github.com/reljicd). All credit of that due to him. This version has been updated and refactored with:
 
-- Compatibility with newer versions of Java, Maven and Docker
+- Compatibility with newer versions of Spring Boot, Swagger, Java, Maven and Docker
 - Simplified package structure (`cassandra` instead of `com.reljicd`)
 - 3-node distributed Cassandra cluster configuration
 - One-command deployment script
@@ -331,6 +331,7 @@ docker restart cassandra
 The script already includes `-DskipTests` to avoid this issue.
 
 ### Containers not starting
+
 ```bash
 # Clean and restart
 docker compose -f docker/docker-compose.yml down
@@ -400,9 +401,10 @@ If any issues are encountered:
 
 ## Implemented Features
 
-- Spring Boot 1.5.8
+- Spring Boot 2.7.18
 - Apache Cassandra 3.11
 - Spring Data Cassandra
+- OpenAPI 3.0 specification (instead of Swagger 2.0)
 - Spring Security (disabled for development)
 - Swagger UI 2.9.2
 - Docker & Docker Compose
