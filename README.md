@@ -1,8 +1,14 @@
 # Spring Boot + Apache Cassandra
 
-## Credits
+## Credits and changes
 
-The original [base code](https://github.com/reljicd/spring-boot-cassandra) belongs to user [reljicd](https://github.com/reljicd). I updated some files to be compatible with newer versions of java, maven and docker.
+The original [base code](https://github.com/reljicd/spring-boot-cassandra) belongs to user [reljicd](https://github.com/reljicd). All credit of that due to him. This version has been updated and refactored with:
+
+- Compatibility with newer versions of Java, Maven and Docker
+- Simplified package structure (`cassandra` instead of `com.reljicd`)
+- 3-node distributed Cassandra cluster configuration
+- One-command deployment script
+- Endpoints for chats
 
 ## Project Description
 
@@ -18,7 +24,7 @@ This project includes a **distributed Cassandra cluster** with 3 nodes:
 
 ## How to Run the Project
 
-### **Quick Start (Recommended)**
+### Quick Start (Recommended)
 
 Run the entire Cassandra cluster (3 nodes) + Spring Boot with a single command:
 
@@ -38,7 +44,7 @@ This script will:
 ./scripts/stop_docker.sh
 ```
 
-### **Manual Setup (Advanced)**
+### Manual Setup
 
 If you prefer to control each step:
 
@@ -69,45 +75,166 @@ Once the services are started, the following interfaces are available:
 | **Cassandra Node 3** | localhost:9044 | Third Cassandra node |
 
 
-## Testing the API
+## Testing the Chat API
 
 ### **Using Swagger UI (Recommended)**
 
 1. Open in browser: http://localhost:9003/swagger-ui.html
-2. Expand the **"example-table-controller"** section
-3. Click on the **GET** endpoint `/api/text_field_1/{textField1}`
-4. Click on the **"Try it out"** button
-5. Enter a value in the `textField1` field (example: `text_field_1`)
-6. Click on **"Execute"**
-7. The response with Cassandra data will be displayed
+2. Expand the **"chat-controller"** section
+3. Try these endpoints:
+
+#### Get All Conversations
+
+- Click on **GET** `/api/chat/conversations`
+- Click **"Try it out"** -> **"Execute"**
+- See all available conversations
+
+#### Get Messages from a Conversation
+- Click on **GET** `/api/chat/conversations/{conversationId}/messages`
+- Click **"Try it out"**
+- Enter conversation ID: `11111111-1111-1111-1111-111111111111`
+- Click **"Execute"**
+- See all messages in that conversation (demonstrates **wide column pattern**)
+
+#### Get Latest Messages (with limit)
+- Click on **GET** `/api/chat/conversations/{conversationId}/messages/latest`
+- Enter conversation ID: `11111111-1111-1111-1111-111111111111`
+- Set limit: `3` (to get only the 3 most recent messages)
+- Click **"Execute"**
 
 ### **Using cURL from Terminal**
 
 ```bash
-# Query data with text_field_1 = "text_field_1"
-curl http://localhost:9003/api/text_field_1/text_field_1
+# Get all conversations
+curl http://localhost:9003/api/chat/conversations
 
-# Expected response:
-# [{"textField1":"text_field_1","textField2":"text_field_2","intField1":1,"intField2":2}]
+# Get all messages from a conversation (wide column demo)
+curl http://localhost:9003/api/chat/conversations/11111111-1111-1111-1111-111111111111/messages
+
+# Get latest 3 messages
+curl "http://localhost:9003/api/chat/conversations/11111111-1111-1111-1111-111111111111/messages/latest?limit=3"
+
+# Get a specific conversation
+curl http://localhost:9003/api/chat/conversations/22222222-2222-2222-2222-222222222222
 ```
 
-### **Using the Browser Directly**
+### **Sample Conversation IDs**
+
+- `11111111-1111-1111-1111-111111111111` - Team Project Discussion (5 messages)
+- `22222222-2222-2222-2222-222222222222` - Weekend Plans (4 messages)
+- `33333333-3333-3333-3333-333333333333` - Work Updates (4 messages)
+
+### Wide Column Pattern Demo
+
+The chat system demonstrates Cassandra's wide column capability:
+- Each conversation can contain thousands of messages in a single partition
+- Messages are stored efficiently with conversation_id as partition key
+- Messages are automatically sorted by message_id (timeuuid) in descending order
+- Perfect for pagination and "infinite scroll" chat interfaces
+
+## Data Structure and Query-Oriented Design
+
+### Understanding Cassandra's Design Philosophy
+
+Unlike relational databases that normalize data and use joins, Cassandra is designed around the queries you need to perform. This is called query-oriented design or query-driven modeling.
+
+### Table Design: Chat Messaging System
+
+This project demonstrates two fundamental Cassandra patterns:
+
+#### 1. Conversations Table (Simple Primary Key)
+
+```
+CREATE TABLE conversations (
+   conversation_id uuid PRIMARY KEY,
+   conversation_name text,
+   created_at timestamp,
+   participants set<text>,
+   last_message_time timestamp
+);
+```
+
+Structure breakdown:
+- conversation_id: Partition key that determines which node stores this row
+- Each conversation is a single row with all metadata
+- The set<text> type stores multiple participants efficiently without a join table
+- Query pattern: Retrieve one conversation by ID or scan all conversations
+
+#### 2. Chat Messages Table (Wide Column Pattern)
+
+```
+CREATE TABLE chat_messages (
+   conversation_id uuid,
+   message_id timeuuid,
+   sender_id text,
+   sender_name text,
+   message_text text,
+   created_at timestamp,
+   is_read boolean,
+   PRIMARY KEY (conversation_id, message_id)
+) WITH CLUSTERING ORDER BY (message_id DESC);
+```
+
+Structure breakdown:
+- Partition key: conversation_id (groups all messages for one conversation together)
+- Clustering key: message_id (timeuuid - sorts messages within the partition)
+- All messages for a conversation are stored together on the same node
+- Messages are automatically sorted in descending order (newest first)
+- This is the "wide column" pattern: one partition can have thousands of columns (messages)
+
+### Why This Design Works
+
+Query-oriented benefits:
+1. Getting all messages for a conversation: Single partition read, no joins needed
+2. Getting latest N messages: Use LIMIT clause with automatic DESC ordering
+3. Pagination: Efficiently fetch chunks of messages using message_id as cursor
+4. High write throughput: Appending new messages is an O(1) operation
+5. Scalability: Each conversation can grow to millions of messages without performance degradation
+
+### Primary Key Composition
+
+The compound primary key (conversation_id, message_id) serves two purposes:
+- Partition key (conversation_id): Determines data distribution across cluster nodes
+- Clustering key (message_id): Determines sort order within each partition
+
+This design ensures:
+- All messages for a conversation live on the same nodes (data locality)
+- Messages are pre-sorted by time (no ORDER BY overhead at query time)
+- Range queries are efficient (get messages between two timestamps)
+
+### Data Replication Strategy
+
+The keyspace uses SimpleStrategy with replication factor 3:
+```
+CREATE KEYSPACE spring_boot_cassandra 
+WITH replication = {'class': 'SimpleStrategy', 'replication_factor': '3'};
+```
+
+This means:
+- Every piece of data is stored on 3 different nodes
+- If one node fails, data remains available from the other two
+- Reads can be served from any of the 3 replica nodes
+- Consistency level can be tuned per query (ONE, QUORUM, ALL)
+
+### Using the Browser Directly
 
 Open in browser:
 ```
-http://localhost:9003/api/text_field_1/text_field_1
+http://localhost:9003/api/chat/conversations
+http://localhost:9003/api/chat/conversations/11111111-1111-1111-1111-111111111111/messages
 ```
 
 
 
 ## Useful Commands
 
-### **View Container Status**
+### View Container Status
 ```bash
 docker ps
 ```
 
-### **View Logs of Specific Container**
+### View Logs of Specific Container
+
 ```bash
 # Spring Boot
 docker logs spring-boot-cassandra -f
@@ -118,7 +245,8 @@ docker logs cassandra-node2 -f
 docker logs cassandra-node3 -f
 ```
 
-### **Check Cassandra Cluster Status**
+### Check Cassandra Cluster Status
+
 ```bash
 # View cluster status
 docker exec -it cassandra-node1 nodetool status
@@ -130,7 +258,8 @@ docker exec -it cassandra-node1 cqlsh
 docker exec -it cassandra-node1 nodetool ring
 ```
 
-### **Stop Services**
+### Stop Services
+
 ```bash
 # Using the script (recommended)
 ./scripts/stop_docker.sh
@@ -142,7 +271,7 @@ cd docker && docker-compose down
 cd docker && docker-compose down -v
 ```
 
-### **Restart Services**
+### Restart Services
 ```bash
 docker compose -f docker/docker-compose.yml restart
 ```
@@ -152,26 +281,6 @@ docker compose -f docker/docker-compose.yml restart
 docker compose -f docker/docker-compose.yml down -v
 docker system prune -f
 ./scripts/run_docker_compose.sh
-```
-
-
-## Data Structure
-
-### **Keyspace:** `spring_boot_cassandra`
-
-### **Table:** `example_table`
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `text_field_1` | TEXT | Primary key (Partition Key) |
-| `text_field_2` | TEXT | Clustering key |
-| `int_field_1` | INT | Clustering key |
-| `int_field_2` | INT | Clustering key |
-
-### **Initial Data:**
-```sql
-INSERT INTO example_table (text_field_1, text_field_2, int_field_1, int_field_2)
-VALUES ('text_field_1', 'text_field_2', 1, 2);
 ```
 
 
@@ -185,7 +294,7 @@ spring.data.cassandra.contact-points=localhost
 spring.data.cassandra.keyspace-name=spring_boot_cassandra
 ```
 
-### **Environment Variables (Docker Compose):**
+### Environment Variables (Docker Compose):
 
 ```yaml
 SPRING_DATA_CASSANDRA_CONTACT_POINTS: cassandra
@@ -194,7 +303,8 @@ SPRING_DATA_CASSANDRA_CONTACT_POINTS: cassandra
 
 ## Troubleshooting
 
-### **Error: "Port 9003 already in use"**
+### Error: "Port 9003 already in use
+
 ```bash
 # Check which process is using the port
 sudo lsof -i :9003
@@ -203,7 +313,8 @@ sudo lsof -i :9003
 docker stop spring-boot-cassandra
 ```
 
-### **Error: "Cannot connect to Cassandra"**
+### Error: "Cannot connect to Cassandra"
+
 ```bash
 # Verify that Cassandra is running
 docker ps | grep cassandra
@@ -215,10 +326,11 @@ docker logs cassandra
 docker restart cassandra
 ```
 
-### **Error: "Tests failing during build"**
+### Error: "Tests failing during build"
+
 The script already includes `-DskipTests` to avoid this issue.
 
-### **Containers not starting**
+### Containers not starting
 ```bash
 # Clean and restart
 docker compose -f docker/docker-compose.yml down
@@ -228,28 +340,9 @@ docker compose -f docker/docker-compose.yml up --build -d
 ```
 
 
-## Available Endpoints
-
-### **Main API**
-
-| Method | Endpoint | Description | Example |
-|--------|----------|-------------|---------|
-| GET | `/api/text_field_1/{textField1}` | Search by text_field_1 | `/api/text_field_1/text_field_1` |
-
-### **Actuator Endpoints**
-
-| Endpoint | Description |
-|----------|-------------|
-| `/health` | Application health status |
-| `/info` | Application information |
-| `/metrics` | System metrics |
-| `/env` | Environment variables |
-| `/beans` | Spring beans |
-| `/mappings` | Endpoint mappings |
-
-
-
 ## Running Tests
+
+This probably does not work as of now because it's not being developed.
 
 ```bash
 # Run all tests
