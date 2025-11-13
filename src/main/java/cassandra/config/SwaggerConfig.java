@@ -1,38 +1,27 @@
 package cassandra.config;
 
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Contact;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.info.License;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import springfox.documentation.builders.ApiInfoBuilder;
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.service.ApiInfo;
-import springfox.documentation.service.Contact;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spring.web.plugins.Docket;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @Configuration
-@EnableSwagger2
 public class SwaggerConfig {
 
     @Bean
-    public Docket api() {
-        return new Docket(DocumentationType.SWAGGER_2)
-                .select()
-                .apis(RequestHandlerSelectors.basePackage("cassandra.controller"))
-                .paths(PathSelectors.any())
-                .build()
-                .apiInfo(apiInfo());
-    }
-
-    private ApiInfo apiInfo() {
-        return new ApiInfoBuilder()
-                .title("Spring Boot + Cassandra API")
-                .description("REST API for Spring Boot + Apache Cassandra Example Application")
-                .version("1.0.0")
-                .contact(new Contact("Cassandra API", "http://localhost:9003", ""))
-                .license("Apache License Version 2.0")
-                .licenseUrl("https://www.apache.org/licenses/LICENSE-2.0")
-                .build();
+    public OpenAPI customOpenAPI() {
+        return new OpenAPI()
+                .info(new Info()
+                        .title("Spring Boot + Cassandra API")
+                        .description("REST API for Spring Boot + Apache Cassandra Example Application with 3-node distributed cluster")
+                        .version("2.0.0")
+                        .contact(new Contact()
+                                .name("Cassandra API")
+                                .url("http://localhost:9003"))
+                        .license(new License()
+                                .name("Apache License Version 2.0")
+                                .url("https://www.apache.org/licenses/LICENSE-2.0")));
     }
 }

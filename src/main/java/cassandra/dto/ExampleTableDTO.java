@@ -2,27 +2,26 @@ package cassandra.dto;
 
 import cassandra.entity.ExampleTable;
 import com.univocity.parsers.annotations.Parsed;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.Objects;
 
-@ApiModel(description = "Example Table Data Transfer Object")
+@Schema(description = "Example Table Data Transfer Object")
 public class ExampleTableDTO {
 
-    @ApiModelProperty(notes = "Primary key text field 1", example = "text_field_1", required = true)
+    @Schema(description = "Primary key text field 1", example = "text_field_1", required = true)
     private String textField1;
     
     @Parsed(index = 0)
-    @ApiModelProperty(notes = "Clustering key text field 2", example = "text_field_2", required = true)
+    @Schema(description = "Clustering key text field 2", example = "text_field_2", required = true)
     private String textField2;
     
     @Parsed(index = 1)
-    @ApiModelProperty(notes = "Clustering key integer field 1", example = "1", required = true)
+    @Schema(description = "Clustering key integer field 1", example = "1", required = true)
     private int intField1;
     
     @Parsed(index = 2)
-    @ApiModelProperty(notes = "Clustering key integer field 2", example = "2", required = true)
+    @Schema(description = "Clustering key integer field 2", example = "2", required = true)
     private int intField2;
 
     public ExampleTableDTO() {

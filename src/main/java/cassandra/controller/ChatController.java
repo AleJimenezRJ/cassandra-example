@@ -3,11 +3,11 @@ package cassandra.controller;
 import cassandra.dto.ChatMessageDTO;
 import cassandra.dto.ConversationDTO;
 import cassandra.service.ChatService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +18,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/chat")
-@Api(value = "Chat System", description = "Operations for managing conversations and messages")
+@Tag(name = "Chat System", description = "Operations for managing conversations and messages in a distributed Cassandra cluster")
 public class ChatController {
 
     private final ChatService chatService;
@@ -28,13 +28,11 @@ public class ChatController {
         this.chatService = chatService;
     }
 
-    @ApiOperation(value = "Get all conversations", 
-                  notes = "Retrieves a list of all conversations in the system",
-                  response = ConversationDTO.class, 
-                  responseContainer = "List")
+    @Operation(summary = "Get all conversations", 
+               description = "Retrieves a list of all conversations in the system")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully retrieved list of conversations"),
-            @ApiResponse(code = 500, message = "Internal server error")
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved list of conversations"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/conversations")
     public ResponseEntity<List<ConversationDTO>> getAllConversations() {
@@ -42,17 +40,16 @@ public class ChatController {
         return new ResponseEntity<>(conversations, HttpStatus.OK);
     }
 
-    @ApiOperation(value = "Get conversation by ID", 
-                  notes = "Retrieves details of a specific conversation",
-                  response = ConversationDTO.class)
+    @Operation(summary = "Get conversation by ID", 
+               description = "Retrieves details of a specific conversation")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully retrieved conversation"),
-            @ApiResponse(code = 404, message = "Conversation not found"),
-            @ApiResponse(code = 500, message = "Internal server error")
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved conversation"),
+            @ApiResponse(responseCode = "404", description = "Conversation not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/conversations/{conversationId}")
     public ResponseEntity<ConversationDTO> getConversationById(
-            @ApiParam(value = "Conversation ID", required = true, example = "11111111-1111-1111-1111-111111111111")
+            @Parameter(description = "Conversation ID", required = true, example = "11111111-1111-1111-1111-111111111111")
             @PathVariable String conversationId) {
         
         try {
@@ -69,18 +66,16 @@ public class ChatController {
         }
     }
 
-    @ApiOperation(value = "Get all messages from a conversation", 
-                  notes = "Retrieves all messages from a specific conversation (wide column demo - can return thousands of messages)",
-                  response = ChatMessageDTO.class, 
-                  responseContainer = "List")
+    @Operation(summary = "Get all messages from a conversation", 
+               description = "Retrieves all messages from a specific conversation (wide column demo - can return thousands of messages)")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully retrieved messages"),
-            @ApiResponse(code = 400, message = "Invalid conversation ID format"),
-            @ApiResponse(code = 500, message = "Internal server error")
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved messages"),
+            @ApiResponse(responseCode = "400", description = "Invalid conversation ID format"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/conversations/{conversationId}/messages")
     public ResponseEntity<List<ChatMessageDTO>> getMessages(
-            @ApiParam(value = "Conversation ID", required = true, example = "11111111-1111-1111-1111-111111111111")
+            @Parameter(description = "Conversation ID", required = true, example = "11111111-1111-1111-1111-111111111111")
             @PathVariable String conversationId) {
         
         try {
@@ -92,21 +87,19 @@ public class ChatController {
         }
     }
 
-    @ApiOperation(value = "Get latest N messages from a conversation", 
-                  notes = "Retrieves the most recent messages from a conversation with pagination support",
-                  response = ChatMessageDTO.class, 
-                  responseContainer = "List")
+    @Operation(summary = "Get latest N messages from a conversation", 
+               description = "Retrieves the most recent messages from a conversation with pagination support")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully retrieved messages"),
-            @ApiResponse(code = 400, message = "Invalid conversation ID format or limit value"),
-            @ApiResponse(code = 500, message = "Internal server error")
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved messages"),
+            @ApiResponse(responseCode = "400", description = "Invalid conversation ID format or limit value"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/conversations/{conversationId}/messages/latest")
     public ResponseEntity<List<ChatMessageDTO>> getLatestMessages(
-            @ApiParam(value = "Conversation ID", required = true, example = "11111111-1111-1111-1111-111111111111")
+            @Parameter(description = "Conversation ID", required = true, example = "11111111-1111-1111-1111-111111111111")
             @PathVariable String conversationId,
             
-            @ApiParam(value = "Number of messages to retrieve", required = false, defaultValue = "50")
+            @Parameter(description = "Number of messages to retrieve")
             @RequestParam(defaultValue = "50") int limit) {
         
         try {
@@ -118,9 +111,9 @@ public class ChatController {
         }
     }
 
-    @ApiOperation(value = "Health check", 
-                  notes = "Simple endpoint to verify the chat API is running")
-    @ApiResponse(code = 200, message = "API is healthy")
+    @Operation(summary = "Health check", 
+               description = "Simple endpoint to verify the chat API is running")
+    @ApiResponse(responseCode = "200", description = "API is healthy")
     @GetMapping("/health")
     public ResponseEntity<String> healthCheck() {
         return new ResponseEntity<>("Chat API is running!", HttpStatus.OK);

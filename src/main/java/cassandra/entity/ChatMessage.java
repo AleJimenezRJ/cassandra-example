@@ -1,9 +1,10 @@
 package cassandra.entity;
 
-import org.springframework.cassandra.core.Ordering;
-import org.springframework.cassandra.core.PrimaryKeyType;
-import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
-import org.springframework.data.cassandra.mapping.Table;
+import org.springframework.data.cassandra.core.cql.Ordering;
+import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
+import org.springframework.data.cassandra.core.mapping.Column;
+import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
+import org.springframework.data.cassandra.core.mapping.Table;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -18,19 +19,19 @@ public class ChatMessage implements Serializable {
     @PrimaryKeyColumn(name = "message_id", ordinal = 1, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING)
     private UUID messageId;
 
-    @org.springframework.data.cassandra.mapping.Column("sender_id")
+    @Column("sender_id")
     private String senderId;
     
-    @org.springframework.data.cassandra.mapping.Column("sender_name")
+    @Column("sender_name")
     private String senderName;
     
-    @org.springframework.data.cassandra.mapping.Column("message_text")
+    @Column("message_text")
     private String messageText;
     
-    @org.springframework.data.cassandra.mapping.Column("created_at")
+    @Column("created_at")
     private Date createdAt;
     
-    @org.springframework.data.cassandra.mapping.Column("is_read")
+    @Column("is_read")
     private Boolean isRead;
 
     public ChatMessage() {

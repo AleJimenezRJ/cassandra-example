@@ -48,7 +48,7 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public ConversationDTO getConversationById(UUID conversationId) {
-        Conversation conversation = conversationRepository.findOne(conversationId);
+        Conversation conversation = conversationRepository.findById(conversationId).orElse(null);
         
         if (conversation == null) {
             return null;
