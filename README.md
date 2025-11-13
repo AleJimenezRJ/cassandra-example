@@ -8,30 +8,50 @@ The original [base code](https://github.com/reljicd/spring-boot-cassandra) belon
 
 This is an example application that demonstrates the integration of **Spring Boot** with **Apache Cassandra**, including a REST API documented with **Swagger UI**.
 
+### Architecture
+
+This project includes a **distributed Cassandra cluster** with 3 nodes:
+- **High Availability**: Data is distributed across multiple nodes
+- **Fault Tolerance**: The cluster continues operating even if one node fails
+- **Load Balancing**: Spring Boot connects to all nodes for optimal performance
+- **Data Replication**: Configured with NetworkTopologyStrategy for production readiness
 
 ## How to Run the Project
 
-### **Option 1: Using Docker Compose (Recommended)**
+### **Quick Start (Recommended)**
+
+Run the entire Cassandra cluster (3 nodes) + Spring Boot with a single command:
 
 ```bash
-# 1. Navigate to the project directory
-cd /home/alejandro/Documents/Cassandra/spring-boot-cassandra
-
-# 2. Execute the script
-./scripts/run_docker_compose.sh
+./scripts/run_docker.sh
 ```
 
-### **Option 2: Using Docker Compose Manually**
+This script will:
+1. Compile the Spring Boot application with Maven
+2. Start a 3-node Cassandra distributed cluster
+3. Initialize the database schema
+4. Launch the Spring Boot application with Swagger UI
+
+**To stop the cluster:**
+
+```bash
+./scripts/stop_docker.sh
+```
+
+### **Manual Setup (Advanced)**
+
+If you prefer to control each step:
 
 ```bash
 # 1. Compile the project
 mvn clean package -DskipTests
 
 # 2. Start the services
-docker compose -f docker/docker-compose.yml up --build -d
+cd docker
+docker-compose up -d
 
 # 3. View the logs (optional)
-docker compose -f docker/docker-compose.yml logs -f
+docker-compose logs -f
 ```
 
 ## Access to Interfaces
@@ -44,7 +64,9 @@ Once the services are started, the following interfaces are available:
 | **REST API** | http://localhost:9003/api/text_field_1/{value} | Main endpoint |
 | **Actuator Health** | http://localhost:9003/health | Application health status |
 | **Actuator Metrics** | http://localhost:9003/metrics | Application metrics |
-| **Cassandra** | localhost:9042 | Cassandra database |
+| **Cassandra Node 1** | localhost:9042 | First Cassandra node (seed) |
+| **Cassandra Node 2** | localhost:9043 | Second Cassandra node (seed) |
+| **Cassandra Node 3** | localhost:9044 | Third Cassandra node |
 
 
 ## Testing the API
@@ -90,13 +112,34 @@ docker ps
 # Spring Boot
 docker logs spring-boot-cassandra -f
 
-# Cassandra
-docker logs cassandra -f
+# Cassandra nodes
+docker logs cassandra-node1 -f
+docker logs cassandra-node2 -f
+docker logs cassandra-node3 -f
+```
+
+### **Check Cassandra Cluster Status**
+```bash
+# View cluster status
+docker exec -it cassandra-node1 nodetool status
+
+# Connect to Cassandra with CQL shell
+docker exec -it cassandra-node1 cqlsh
+
+# View cluster information
+docker exec -it cassandra-node1 nodetool ring
 ```
 
 ### **Stop Services**
 ```bash
-docker compose -f docker/docker-compose.yml down
+# Using the script (recommended)
+./scripts/stop_docker.sh
+
+# Or manually
+cd docker && docker-compose down
+
+# To remove all data (volumes)
+cd docker && docker-compose down -v
 ```
 
 ### **Restart Services**
