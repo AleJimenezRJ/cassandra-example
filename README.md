@@ -1,193 +1,276 @@
 # Spring Boot + Apache Cassandra
 
-This is an example **Spring Boot + Apache Cassandra** app.
+## Credits
 
-It was made using **Spring Boot**, **Apache Cassandra**, **Spring Security**, **Spring Data Cassandra**, **Docker** and **Docker Compose**.
+The original [base code](https://github.com/reljicd/spring-boot-cassandra) belongs to user [reljicd](https://github.com/reljicd). I updated some files to be compatible with newer versions of java, maven and docker.
 
-##Configuration
+## Project Description
 
-If you are not using localhost Cassandra, it is necessary to configure it to use proper endpoints.
+This is an example application that demonstrates the integration of **Spring Boot** with **Apache Cassandra**, including a REST API documented with **Swagger UI**.
 
-### Configuration files
 
-Folder **src/resources/** contains config files for **spring-boot-cassandra** Spring Boot application.
+## How to Run the Project
 
-* **src/resources/application.properties** - main configuration file
-
-### Environment variables
-
-Configuration using environment variables is done using next variables:
-
-* **SPRING_DATA_CASSANDRA_CONTACT_POINTS** - Cassandra cluster endpoints
-
-* **SPRING_DATA_CASSANDRA_KEYSPACE_NAME** - Cassandra keyspace
-
-Example:
+### **Option 1: Using Docker Compose (Recommended)**
 
 ```bash
-$ export SPRING_DATA_CASSANDRA_CONTACT_POINTS=cassandra_contact_point1,cassandra_contact_point2
-$ export SPRING_DATA_CASSANDRA_KEYSPACE_NAME=cassandra_keyspace_name
+# 1. Navigate to the project directory
+cd /home/alejandro/Documents/Cassandra/spring-boot-cassandra
+
+# 2. Execute the script
+./scripts/run_docker_compose.sh
 ```
 
-### Command line arguments
-
-It is also possible to pass these configuration settings using command line arguments. Example:
+### **Option 2: Using Docker Compose Manually**
 
 ```bash
-$ java -Djava.security.egd=file:/dev/./urandom -jar app.jar \
-    --spring.data.cassandra.contact-points=assandra_contact_point1,cassandra_contact_point2 \
-    --spring.data.cassandra.keyspace-name=keyspace-name
-``` 
+# 1. Compile the project
+mvn clean package -DskipTests
 
-## How to run
+# 2. Start the services
+docker compose -f docker/docker-compose.yml up --build -d
 
-### Maven
-
-open a terminal and run the following commands to ensure that you have valid versions of Java and Maven installed:
-
-```bash
-$ java -version
-java version "1.8.0_102"
-Java(TM) SE Runtime Environment (build 1.8.0_102-b14)
-Java HotSpot(TM) 64-Bit Server VM (build 25.102-b14, mixed mode)
+# 3. View the logs (optional)
+docker compose -f docker/docker-compose.yml logs -f
 ```
 
+## Access to Interfaces
+
+Once the services are started, the following interfaces are available:
+
+| Service | URL | Description |
+|----------|-----|-------------|
+| **Swagger UI** | http://localhost:9003/swagger-ui.html | Graphical interface to test the API |
+| **REST API** | http://localhost:9003/api/text_field_1/{value} | Main endpoint |
+| **Actuator Health** | http://localhost:9003/health | Application health status |
+| **Actuator Metrics** | http://localhost:9003/metrics | Application metrics |
+| **Cassandra** | localhost:9042 | Cassandra database |
+
+
+## Testing the API
+
+### **Using Swagger UI (Recommended)**
+
+1. Open in browser: http://localhost:9003/swagger-ui.html
+2. Expand the **"example-table-controller"** section
+3. Click on the **GET** endpoint `/api/text_field_1/{textField1}`
+4. Click on the **"Try it out"** button
+5. Enter a value in the `textField1` field (example: `text_field_1`)
+6. Click on **"Execute"**
+7. The response with Cassandra data will be displayed
+
+### **Using cURL from Terminal**
+
 ```bash
-$ mvn -v
-Apache Maven 3.3.9 (bb52d8502b132ec0a5a3f4c09453c07478323dc5; 2015-11-10T16:41:47+00:00)
-Maven home: /usr/local/Cellar/maven/3.3.9/libexec
-Java version: 1.8.0_102, vendor: Oracle Corporation
+# Query data with text_field_1 = "text_field_1"
+curl http://localhost:9003/api/text_field_1/text_field_1
+
+# Expected response:
+# [{"textField1":"text_field_1","textField2":"text_field_2","intField1":1,"intField2":2}]
 ```
 
-#### Using the Maven Plugin
+### **Using the Browser Directly**
 
-The Spring Boot Maven plugin includes a run goal that can be used to quickly compile and run your application. 
-Applications run in an exploded form, as they do in your IDE. 
-The following example shows a typical Maven command to run a Spring Boot application:
- 
-```bash
-$ mvn spring-boot:run
-``` 
-
-#### Using Executable Jar
-
-To create an executable jar run:
-
-```bash
-$ mvn package
-``` 
-
-To run that application, use the java -jar command, as follows:
-
-```bash
-$ java -jar target/spring-boot-cassandra-0.0.1-SNAPSHOT.jar
+Open in browser:
+```
+http://localhost:9003/api/text_field_1/text_field_1
 ```
 
-To exit the application, press **ctrl-c**.
 
-### Docker
 
-It is possible to run **spring-boot-cassandra** and **Cassandra** using Docker:
+## Useful Commands
 
-#### spring-boot-cassandra
-
-Build Docker image:
+### **View Container Status**
 ```bash
-$ mvn package
-$ docker build -t spring-boot-cassandra:dev -f docker/spring-boot-cassandra/Dockerfile .
+docker ps
 ```
 
-Run Docker container:
+### **View Logs of Specific Container**
 ```bash
-$ docker run --rm -i -p 9003:9003 \
-      -e SPRING_DATA_CASSANDRA_CONTACT_POINTS=$SPRING_DATA_CASSANDRA_CONTACT_POINTS \
-      -e SPRING_DATA_CASSANDRA_KEYSPACE_NAME=$SPRING_DATA_CASSANDRA_KEYSPACE_NAME \
-      --name spring-boot-cassandra \
-      spring-boot-cassandra:dev
+# Spring Boot
+docker logs spring-boot-cassandra -f
+
+# Cassandra
+docker logs cassandra -f
 ```
 
-##### Helper script
-
-It is possible to run all of the above with helper script:
-
+### **Stop Services**
 ```bash
-$ chmod +x scripts/run_docker.sh
-$ scripts/run_docker.sh
+docker compose -f docker/docker-compose.yml down
 ```
 
-#### Cassandra
-
-Build Docker image:
+### **Restart Services**
 ```bash
-$ docker build -t cassandra:dev -f docker/cassandra/Dockerfile .
+docker compose -f docker/docker-compose.yml restart
 ```
 
-Run Docker container:
+### **Clean Everything and Start Fresh**
 ```bash
-$ docker run --rm -i \
-      -p 9042:9042 \
-      --name cassandra \
-      cassandra:dev
+docker compose -f docker/docker-compose.yml down -v
+docker system prune -f
+./scripts/run_docker_compose.sh
 ```
 
-##### Helper script
 
-It is possible to run all of the above with helper script:
+## Data Structure
 
-```bash
-$ chmod +x scripts/run_docker_cassandra.sh
-$ scripts/run_docker_cassandra.sh
+### **Keyspace:** `spring_boot_cassandra`
+
+### **Table:** `example_table`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `text_field_1` | TEXT | Primary key (Partition Key) |
+| `text_field_2` | TEXT | Clustering key |
+| `int_field_1` | INT | Clustering key |
+| `int_field_2` | INT | Clustering key |
+
+### **Initial Data:**
+```sql
+INSERT INTO example_table (text_field_1, text_field_2, int_field_1, int_field_2)
+VALUES ('text_field_1', 'text_field_2', 1, 2);
 ```
 
-### Docker Compose
 
-Docker Compose file **docker/docker-compose.yml** is written to facilitate running of both properly initialized Cassandra, 
-as well of the spring-boot-cassandra containers.
+## Configuration
 
-Run Docker Compose:
-```bash
-$ mvn package
-$ docker-compose -f docker/docker-compose.yml up --build --force-recreate --abort-on-container-exit
+### **Configuration File:** `src/main/resources/application.properties`
+
+```properties
+server.port=9003
+spring.data.cassandra.contact-points=localhost
+spring.data.cassandra.keyspace-name=spring_boot_cassandra
 ```
 
-#### Helper script
+### **Environment Variables (Docker Compose):**
 
-It is possible to run all of the above with helper script:
-
-```bash
-$ chmod +x scripts/run_docker_compose.sh
-$ scripts/run_docker_compose.sh
+```yaml
+SPRING_DATA_CASSANDRA_CONTACT_POINTS: cassandra
 ```
 
-## Docker 
 
-Folder **docker/spring-boot-cassandra** contains Dockerfile for:
+## Troubleshooting
 
-* **docker/spring-boot-cassandra/Dockerfile** - Docker build file for executing spring-boot-cassandra Docker image. 
-Instructions to build artifacts, copy build artifacts to docker image and then run microservice on proper port with proper configuration file.
+### **Error: "Port 9003 already in use"**
+```bash
+# Check which process is using the port
+sudo lsof -i :9003
 
-* **docker/spring-boot-cassandra/wait-for-it.sh** - is a pure bash script that will wait on the availability of a host and TCP port. It is useful for synchronizing the spin-up of interdependent services, such as linked docker containers. Since it is a pure bash script, it does not have any external dependencies. https://github.com/vishnubob/wait-for-it 
+# Stop the container
+docker stop spring-boot-cassandra
+```
 
-Folder **docker/cassandra** contains:
+### **Error: "Cannot connect to Cassandra"**
+```bash
+# Verify that Cassandra is running
+docker ps | grep cassandra
 
-* **docker/cassandra/Dockerfile** - Docker build file for Cassandra Docker image. 
+# Check Cassandra logs
+docker logs cassandra
 
-* **docker/cassandra/docker-entrypoint.sh** - Entrypoint shell script for running Cassandra and executing CQL files after Cassandra is initialized. https://github.com/dschroe/cassandra-docker
+# Restart Cassandra
+docker restart cassandra
+```
 
-* **docker/cassandra/initial-seed.cql** - Schema definition and imports for Cassandra. 
+### **Error: "Tests failing during build"**
+The script already includes `-DskipTests` to avoid this issue.
 
-## Util Scripts
+### **Containers not starting**
+```bash
+# Clean and restart
+docker compose -f docker/docker-compose.yml down
+docker system prune -f
+mvn clean package -DskipTests
+docker compose -f docker/docker-compose.yml up --build -d
+```
 
-* **scripts/run_docker.sh.sh** - util script for running spring-boot-cassandra Docker container using **docker/spring-boot-cassandra/Dockerfile**
 
-* **scripts/run_docker_cassandra.sh** - util script for running Cassandra Docker container using **docker/cassandra/Dockerfile**
+## Available Endpoints
 
-* **scripts/run_docker_compose.sh** - util script for running Docker Compose.
+### **Main API**
 
-## Tests
+| Method | Endpoint | Description | Example |
+|--------|----------|-------------|---------|
+| GET | `/api/text_field_1/{textField1}` | Search by text_field_1 | `/api/text_field_1/text_field_1` |
 
-Tests can be run by executing following command from the root of the project:
+### **Actuator Endpoints**
+
+| Endpoint | Description |
+|----------|-------------|
+| `/health` | Application health status |
+| `/info` | Application information |
+| `/metrics` | System metrics |
+| `/env` | Environment variables |
+| `/beans` | Spring beans |
+| `/mappings` | Endpoint mappings |
+
+
+
+## Running Tests
 
 ```bash
-$ mvn test
+# Run all tests
+mvn test
+
+# Run specific tests
+mvn test -Dtest=ExampleTableRepositoryTest
 ```
+
+
+## Building the JAR
+
+```bash
+# Build the executable JAR
+mvn clean package
+
+# The JAR is generated at:
+# target/spring-boot-cassandra-0.0.1-SNAPSHOT.jar
+
+# Run the JAR directly (requires Cassandra running)
+java -jar target/spring-boot-cassandra-0.0.1-SNAPSHOT.jar
+```
+
+
+## Important Notes
+
+1. **Default Credentials**: No authentication is required (it is disabled in `SpringSecurityConfig.java`)
+
+2. **Startup Time**: 
+   - Cassandra: ~30 seconds
+   - Spring Boot: ~10 additional seconds
+   - Total: ~40-45 seconds
+
+3. **Persistence**: Data in Cassandra does not persist between restarts (no volumes configured)
+
+4. **Default Port**: 9003 (configurable in `application.properties`)
+
+
+
+## Useful Links
+
+- **Swagger UI**: http://localhost:9003/swagger-ui.html
+- **API Docs JSON**: http://localhost:9003/v2/api-docs
+- **Health Check**: http://localhost:9003/health
+
+
+## Support
+
+If any issues are encountered:
+
+1. Check the logs: `docker logs spring-boot-cassandra`
+2. Verify that all containers are running: `docker ps`
+3. Refer to the "Troubleshooting" section above
+
+
+## Implemented Features
+
+- Spring Boot 1.5.8
+- Apache Cassandra 3.11
+- Spring Data Cassandra
+- Spring Security (disabled for development)
+- Swagger UI 2.9.2
+- Docker & Docker Compose
+- Actuator (monitoring and metrics)
+- Automatic database initialization
+
+
