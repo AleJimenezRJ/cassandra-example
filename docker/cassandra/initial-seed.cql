@@ -75,3 +75,94 @@ INSERT INTO chat_messages (conversation_id, message_id, sender_id, sender_name, 
 
 INSERT INTO chat_messages (conversation_id, message_id, sender_id, sender_name, message_text, created_at, is_read)
    VALUES (33333333-3333-3333-3333-333333333333, now(), 'eve', 'Eve Wilson', 'Excellent work team!', '2025-11-12 16:45:00', false);
+
+
+-- WIDE COLUMN TABLE: Sensor Metrics
+-- This table demonstrates the power of Cassandra's wide column design.
+-- Unlike SQL where you'd need multiple tables or rows, here we can store
+-- MILLIONS of metrics for a single sensor in ONE partition.
+-- The clustering columns (year, month, day, hour, recorded_at) create a 
+-- natural time-series structure where each sensor can have unlimited metrics.
+
+CREATE TABLE sensor_metrics (
+   sensor_id text,
+   year int,
+   month int,
+   day int,
+   hour int,
+   recorded_at timestamp,
+   metric_type text,
+   metric_value double,
+   unit text,
+   location text,
+   status text,
+   metadata map<text, text>,
+                  -- Partition Key         Clustering Columns = WIDE columns
+   PRIMARY KEY ((sensor_id, year, month), day, hour, recorded_at)
+) WITH CLUSTERING ORDER BY (day DESC, hour DESC, recorded_at DESC)
+  AND comment = 'Wide column design: Each sensor can have millions of time-series metrics in a single partition';
+
+-- Insert sample data for sensor TEMP-001 (Temperature Sensor)
+-- November 13, 2025 - Morning readings
+INSERT INTO sensor_metrics (sensor_id, year, month, day, hour, recorded_at, metric_type, metric_value, unit, location, status, metadata)
+   VALUES ('TEMP-001', 2025, 11, 13, 8, '2025-11-13 08:00:00', 'temperature', 22.5, 'celsius', 'Server Room A', 'normal', {'device': 'DHT22', 'firmware': '1.2.3'});
+
+INSERT INTO sensor_metrics (sensor_id, year, month, day, hour, recorded_at, metric_type, metric_value, unit, location, status, metadata)
+   VALUES ('TEMP-001', 2025, 11, 13, 8, '2025-11-13 08:15:00', 'temperature', 22.7, 'celsius', 'Server Room A', 'normal', {'device': 'DHT22', 'firmware': '1.2.3'});
+
+INSERT INTO sensor_metrics (sensor_id, year, month, day, hour, recorded_at, metric_type, metric_value, unit, location, status, metadata)
+   VALUES ('TEMP-001', 2025, 11, 13, 8, '2025-11-13 08:30:00', 'temperature', 23.1, 'celsius', 'Server Room A', 'normal', {'device': 'DHT22', 'firmware': '1.2.3'});
+
+INSERT INTO sensor_metrics (sensor_id, year, month, day, hour, recorded_at, metric_type, metric_value, unit, location, status, metadata)
+   VALUES ('TEMP-001', 2025, 11, 13, 8, '2025-11-13 08:45:00', 'temperature', 23.4, 'celsius', 'Server Room A', 'normal', {'device': 'DHT22', 'firmware': '1.2.3'});
+
+INSERT INTO sensor_metrics (sensor_id, year, month, day, hour, recorded_at, metric_type, metric_value, unit, location, status, metadata)
+   VALUES ('TEMP-001', 2025, 11, 13, 9, '2025-11-13 09:00:00', 'temperature', 23.8, 'celsius', 'Server Room A', 'normal', {'device': 'DHT22', 'firmware': '1.2.3'});
+
+INSERT INTO sensor_metrics (sensor_id, year, month, day, hour, recorded_at, metric_type, metric_value, unit, location, status, metadata)
+   VALUES ('TEMP-001', 2025, 11, 13, 9, '2025-11-13 09:15:00', 'temperature', 24.2, 'celsius', 'Server Room A', 'warning', {'device': 'DHT22', 'firmware': '1.2.3'});
+
+INSERT INTO sensor_metrics (sensor_id, year, month, day, hour, recorded_at, metric_type, metric_value, unit, location, status, metadata)
+   VALUES ('TEMP-001', 2025, 11, 13, 9, '2025-11-13 09:30:00', 'temperature', 25.1, 'celsius', 'Server Room A', 'warning', {'device': 'DHT22', 'firmware': '1.2.3'});
+
+-- November 12, 2025 - Previous day readings
+INSERT INTO sensor_metrics (sensor_id, year, month, day, hour, recorded_at, metric_type, metric_value, unit, location, status, metadata)
+   VALUES ('TEMP-001', 2025, 11, 12, 14, '2025-11-12 14:00:00', 'temperature', 21.8, 'celsius', 'Server Room A', 'normal', {'device': 'DHT22', 'firmware': '1.2.3'});
+
+INSERT INTO sensor_metrics (sensor_id, year, month, day, hour, recorded_at, metric_type, metric_value, unit, location, status, metadata)
+   VALUES ('TEMP-001', 2025, 11, 12, 14, '2025-11-12 14:30:00', 'temperature', 22.1, 'celsius', 'Server Room A', 'normal', {'device': 'DHT22', 'firmware': '1.2.3'});
+
+INSERT INTO sensor_metrics (sensor_id, year, month, day, hour, recorded_at, metric_type, metric_value, unit, location, status, metadata)
+   VALUES ('TEMP-001', 2025, 11, 12, 15, '2025-11-12 15:00:00', 'temperature', 22.4, 'celsius', 'Server Room A', 'normal', {'device': 'DHT22', 'firmware': '1.2.3'});
+
+-- Insert sample data for sensor HUMID-001 (Humidity Sensor)
+INSERT INTO sensor_metrics (sensor_id, year, month, day, hour, recorded_at, metric_type, metric_value, unit, location, status, metadata)
+   VALUES ('HUMID-001', 2025, 11, 13, 8, '2025-11-13 08:00:00', 'humidity', 45.2, 'percent', 'Server Room A', 'normal', {'device': 'DHT22', 'firmware': '1.2.3'});
+
+INSERT INTO sensor_metrics (sensor_id, year, month, day, hour, recorded_at, metric_type, metric_value, unit, location, status, metadata)
+   VALUES ('HUMID-001', 2025, 11, 13, 8, '2025-11-13 08:15:00', 'humidity', 46.1, 'percent', 'Server Room A', 'normal', {'device': 'DHT22', 'firmware': '1.2.3'});
+
+INSERT INTO sensor_metrics (sensor_id, year, month, day, hour, recorded_at, metric_type, metric_value, unit, location, status, metadata)
+   VALUES ('HUMID-001', 2025, 11, 13, 8, '2025-11-13 08:30:00', 'humidity', 47.5, 'percent', 'Server Room A', 'normal', {'device': 'DHT22', 'firmware': '1.2.3'});
+
+INSERT INTO sensor_metrics (sensor_id, year, month, day, hour, recorded_at, metric_type, metric_value, unit, location, status, metadata)
+   VALUES ('HUMID-001', 2025, 11, 13, 9, '2025-11-13 09:00:00', 'humidity', 48.8, 'percent', 'Server Room A', 'normal', {'device': 'DHT22', 'firmware': '1.2.3'});
+
+-- Insert sample data for sensor CPU-001 (CPU Usage Sensor)
+INSERT INTO sensor_metrics (sensor_id, year, month, day, hour, recorded_at, metric_type, metric_value, unit, location, status, metadata)
+   VALUES ('CPU-001', 2025, 11, 13, 8, '2025-11-13 08:00:00', 'cpu_usage', 34.5, 'percent', 'Node-1', 'normal', {'host': 'cassandra-node-1', 'cores': '8'});
+
+INSERT INTO sensor_metrics (sensor_id, year, month, day, hour, recorded_at, metric_type, metric_value, unit, location, status, metadata)
+   VALUES ('CPU-001', 2025, 11, 13, 8, '2025-11-13 08:05:00', 'cpu_usage', 42.1, 'percent', 'Node-1', 'normal', {'host': 'cassandra-node-1', 'cores': '8'});
+
+INSERT INTO sensor_metrics (sensor_id, year, month, day, hour, recorded_at, metric_type, metric_value, unit, location, status, metadata)
+   VALUES ('CPU-001', 2025, 11, 13, 8, '2025-11-13 08:10:00', 'cpu_usage', 56.7, 'percent', 'Node-1', 'normal', {'host': 'cassandra-node-1', 'cores': '8'});
+
+INSERT INTO sensor_metrics (sensor_id, year, month, day, hour, recorded_at, metric_type, metric_value, unit, location, status, metadata)
+   VALUES ('CPU-001', 2025, 11, 13, 8, '2025-11-13 08:15:00', 'cpu_usage', 78.9, 'percent', 'Node-1', 'warning', {'host': 'cassandra-node-1', 'cores': '8'});
+
+INSERT INTO sensor_metrics (sensor_id, year, month, day, hour, recorded_at, metric_type, metric_value, unit, location, status, metadata)
+   VALUES ('CPU-001', 2025, 11, 13, 8, '2025-11-13 08:20:00', 'cpu_usage', 89.2, 'percent', 'Node-1', 'critical', {'host': 'cassandra-node-1', 'cores': '8'});
+
+INSERT INTO sensor_metrics (sensor_id, year, month, day, hour, recorded_at, metric_type, metric_value, unit, location, status, metadata)
+   VALUES ('CPU-001', 2025, 11, 13, 8, '2025-11-13 08:25:00', 'cpu_usage', 62.3, 'percent', 'Node-1', 'normal', {'host': 'cassandra-node-1', 'cores': '8'});
