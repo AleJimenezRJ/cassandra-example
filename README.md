@@ -8,7 +8,8 @@ The original [base code](https://github.com/reljicd/spring-boot-cassandra) belon
 - Simplified package structure (`cassandra` instead of `com.reljicd`)
 - 3-node distributed Cassandra cluster configuration
 - One-command deployment script
-- Endpoints for chats
+- API for chats - Demostrates the design of Cassandra on Tables
+- Sensor Metrics API - Demonstrates Wide Column design for time-series data
 
 ## Project Description
 
@@ -75,12 +76,12 @@ Once the services are started, the following interfaces are available:
 | **Cassandra Node 3** | localhost:9044 | Third Cassandra node |
 
 
-## Testing the Chat API
+## Testing the API
 
 ### **Using Swagger UI (Recommended)**
 
 1. Open in browser: http://localhost:9003/swagger-ui.html
-2. Expand the **"chat-controller"** section
+2. Expand the **"chat-controller"** section or **"Sensor Metrics (Wide Column Demo)"** section
 3. Try these endpoints:
 
 #### Get All Conversations
@@ -412,3 +413,8 @@ If any issues are encountered:
 - Automatic database initialization
 
 
+## References
+
+- [Quick guide on what is Cassandra](https://www.instaclustr.com/education/apache-cassandra/apache-cassandra-database/)
+- [Cassandra Official Documentation](https://cassandra.apache.org/doc/latest/)
+- [Cassandra Data Modeling](https://cassandra.apache.org/doc/latest/cassandra/developing/data-modeling/data-modeling_rdbms.html)
