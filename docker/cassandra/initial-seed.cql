@@ -3,7 +3,7 @@ CREATE KEYSPACE IF NOT EXISTS spring_boot_cassandra WITH replication = {'class':
 
 USE spring_boot_cassandra;
 
--- Table for storing conversations metadata
+-- Table for storing conversations metadata, too similar to SQL
 CREATE TABLE conversations (
    conversation_id uuid PRIMARY KEY,
    conversation_name text,
@@ -12,7 +12,7 @@ CREATE TABLE conversations (
    last_message_time timestamp
 );
 
--- Table for storing chat messages (wide column design)
+-- Table for storing chat messages (wide column design, but not obvious)
 CREATE TABLE chat_messages (
    conversation_id uuid,
    message_id timeuuid,
