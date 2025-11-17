@@ -23,6 +23,18 @@ This project includes a **distributed Cassandra cluster** with 3 nodes:
 - **Load Balancing**: Spring Boot connects to all nodes for optimal performance
 - **Data Replication**: Configured with NetworkTopologyStrategy for production readiness
 
+## Prerequisites
+
+- **Docker** and **Docker Compose**: For running the Cassandra cluster and application containers
+- **Java 8 or higher**: JDK for compiling the Spring Boot application
+- **Maven 3.6+**: For building the project and managing dependencies
+- **curl** (optional): For testing API endpoints from the command line
+- **jq** (optional): For formatting JSON responses in tests
+
+### Development Environment
+
+This project was developed and tested on **WSL (Windows Subsystem for Linux)** with Ubuntu, but it should work on any Linux/Unix environment or Windows with Docker Desktop.
+
 ## How to Run the Project
 
 ### Quick Start (Recommended)
